@@ -1,13 +1,12 @@
 package com.test.nals.config;
 
 import com.test.nals.controller.WorkController;
-import com.test.nals.repository.DaoUtils;
+import com.test.nals.util.DaoUtils;
 import com.test.nals.repository.WorkRepository;
 import com.test.nals.repository.impl.WorkRepositoryImpl;
 import com.test.nals.service.WorkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -60,8 +59,4 @@ public class TestNalsConfiguration {
         return new WorkService();
     }
 
-    @Bean
-    public WorkController workController(@Autowired WorkService workService) {
-        return new WorkController();
-    }
 }

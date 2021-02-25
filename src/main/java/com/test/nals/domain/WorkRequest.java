@@ -13,17 +13,14 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class WorkRequest {
 
-    String idWork;
+    String id;
 
     @NotNull(message = "WorkName must not empty or null")
     String workName;
 
-    @NotNull(message = "Starting Date must not empty or null")
     LocalDateTime startingDate;
 
-    @NotNull(message = "Ending Date must not empty or null")
     LocalDateTime endingDate;
 
-    @NotNull(message = "Status must not empty or null")
     String status;
 }

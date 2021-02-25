@@ -3,10 +3,12 @@ package com.test.nals.controller;
 import com.test.nals.domain.WorkRequest;
 import com.test.nals.entity.Work;
 import com.test.nals.service.WorkService;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping(value = "/works")
+@RequestMapping(value = "/work")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
@@ -28,16 +30,16 @@ public class WorkController {
     public WorkController() {
     }
 
-    @PostMapping()
-    public ResponseEntity createWork(@Valid @RequestBody WorkRequest request) {
-        workService.createWork(request);
+    @PostMapping
+    public ResponseEntity createNewWork(@Valid @RequestBody WorkRequest request) {
+        workService.createNewWork(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{idWork}")
-    public ResponseEntity editWork(@PathVariable(name = "idWork") String idWork,
+    public ResponseEntity updateWork(@PathVariable(name = "idWork") String idWork,
                          @RequestBody WorkRequest workRequest) {
-        workService.editWork(idWork, workRequest);
+        workService.updateWork(idWork, workRequest);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

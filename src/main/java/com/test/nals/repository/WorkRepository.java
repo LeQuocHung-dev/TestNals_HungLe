@@ -1,5 +1,6 @@
 package com.test.nals.repository;
 
+import com.test.nals.domain.WorkRequest;
 import com.test.nals.entity.Work;
 import org.springframework.data.domain.Page;
 
@@ -7,14 +8,14 @@ public interface WorkRepository {
 
     int count();
 
-    boolean isExist(String idWork);
+    boolean isExistWork(String idWork);
 
-    void save(Work work);
+    int createNewWork(WorkRequest work);
 
-    void update(Work work);
+    int updateWork(WorkRequest work);
 
-    void delete(String workId);
+    int deleteWork(String workId);
 
-    Page<Work> getListWork(org.springframework.data.domain.Pageable pageable);
+    Page<Work> getWorks(org.springframework.data.domain.Pageable pageable);
 
 }

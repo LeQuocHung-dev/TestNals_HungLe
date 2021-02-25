@@ -1,9 +1,11 @@
 package com.test.nals.repository.impl;
 
+import com.test.nals.domain.WorkRequest;
 import com.test.nals.entity.Work;
 import com.test.nals.exception.DaoException;
-import com.test.nals.repository.DaoUtils;
+import com.test.nals.util.DaoUtils;
 import com.test.nals.repository.WorkRepository;
+import com.test.nals.util.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,10 +35,14 @@ public class WorkRepositoryImpl implements WorkRepository{
     private DaoUtils daoUtils;
 
     @Override
-    public boolean isExist(String idWork) {
-        log.info("Check existance of Work with Id {}", idWork);
+    public boolean isExistWork(String idWork) {
+        log.info("Check Work with Id {} exist or not", idWork);
+
+        //params
         List<SqlParameterValue> params = new ArrayList<>();
         params.add(new SqlParameterValue(Types.VARCHAR, idWork));
+
+        //Get query statement
         String query = daoUtils.getSQLStatement("SELECT_WORK_BY_KEY");
 
         List<String> result = null;
@@ -45,74 +51,74 @@ public class WorkRepositoryImpl implements WorkRepository{
         } catch (DaoException ex) {
             throw new DaoException(ex.getMessage());
         }
+
+        //Result is not empty => return true.
         return !result.isEmpty() ? true:false;
     }
 
     @Override
-    public void save(Work work) {
-        log.info("Create new work {} ", work);
-        if (!isExist(work.getId())) {
-            List<SqlParameterValue> params = new ArrayList<>();
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getId()));
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getWorkName()));
-            params.add(new SqlParameterValue(Types.TIMESTAMP, work.getStartingDate()));
-            params.add(new SqlParameterValue(Types.TIMESTAMP, work.getEndingDate()));
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getStatus()));
-
-            String query = daoUtils.getSQLStatement("SAVE_WORK");
-
-            try {
-                jdbcTemplate.update(query, params.toArray());
-            } catch (DaoException ex) {
-                throw new DaoException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public void update(Work work) {
-        log.info("Update work {} ", work);
-        if (isExist(work.getId())) {
-            List<SqlParameterValue> params = new ArrayList<>();
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getId()));
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getWorkName()));
-            params.add(new SqlParameterValue(Types.TIMESTAMP, work.getStartingDate()));
-            params.add(new SqlParameterValue(Types.TIMESTAMP, work.getEndingDate()));
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getStatus()));
-            params.add(new SqlParameterValue(Types.VARCHAR, work.getId()));
-
-            String query = daoUtils.getSQLStatement("UPDATE_WORK");
-            try {
-                jdbcTemplate.update(query, params.toArray());
-            } catch (DaoException ex) {
-                throw new DaoException(ex.getMessage());
-            }
-            log.info("This work with id {} is updated", work.getId());
-        }
-
-    }
-
-    @Override
-    public void delete(String workId) {
-        log.info("Delete a work with id {} ", workId);
+    public int createNewWork(WorkRequest work) {
+        //Get params
         List<SqlParameterValue> params = new ArrayList<>();
-        params.add(0, new SqlParameterValue(Types.VARCHAR, workId));
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getId()));
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getWorkName()));
+        params.add(new SqlParameterValue(Types.TIMESTAMP, work.getStartingDate()));
+        params.add(new SqlParameterValue(Types.TIMESTAMP, work.getEndingDate()));
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getStatus()));
 
-        String query = daoUtils.getSQLStatement("DELETE_WORK");
+        //Get a query statement
+        String query = daoUtils.getSQLStatement("SAVE_WORK");
+
         try {
-            jdbcTemplate.update(query, params.toArray());
+            return jdbcTemplate.update(query, params.toArray());
         } catch (DaoException ex) {
             throw new DaoException(ex.getMessage());
         }
     }
 
     @Override
-    public Page<Work> getListWork(org.springframework.data.domain.Pageable pageable) {
+    public int updateWork(WorkRequest work) {
+        //Get param list
+        List<SqlParameterValue> params = new ArrayList<>();
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getId()));
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getWorkName()));
+        params.add(new SqlParameterValue(Types.TIMESTAMP, work.getStartingDate()));
+        params.add(new SqlParameterValue(Types.TIMESTAMP, work.getEndingDate()));
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getStatus()));
+        params.add(new SqlParameterValue(Types.VARCHAR, work.getId()));
 
-        log.info("Get work list in page {} ", pageable.getPageNumber());
+        //Get query statement
+        String query = daoUtils.getSQLStatement("UPDATE_WORK");
+        try {
+            return jdbcTemplate.update(query, params.toArray());
+        } catch (DaoException ex) {
+            throw new DaoException(ex.getMessage());
+        }
+    }
 
+    @Override
+    public int deleteWork(String workId) {
+        //Get params
+        List<SqlParameterValue> params = new ArrayList<>();
+        params.add(0, new SqlParameterValue(Types.VARCHAR, workId));
+
+        //Get a query statement
+        String query = daoUtils.getSQLStatement("DELETE_WORK");
+        try {
+            return jdbcTemplate.update(query, params.toArray());
+        } catch (DaoException ex) {
+            throw new DaoException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public Page<Work> getWorks(org.springframework.data.domain.Pageable pageable) {
+
+        log.info("Get a work list in page {} ", pageable.getPageNumber());
+
+        //Get a sort field name
         Sort.Order order = !pageable.getSort().isEmpty() ? pageable.getSort().toList().get(0) : Sort.Order.by("id");
-        List<Work> works = null;
+        List<Work> works = new ArrayList<>();
         try {
             works = jdbcTemplate.query("SELECT * FROM work ORDER BY " + order.getProperty() + " "
                             + order.getDirection().name() + " LIMIT " + pageable.getPageSize() + " OFFSET " + pageable.getOffset(),
@@ -123,9 +129,14 @@ public class WorkRepositoryImpl implements WorkRepository{
         return new PageImpl<Work>(works, pageable, count());
     }
 
+    /*
+    * Method to count number of records
+    * @Return int
+    */
     @Override
     public int count() {
 
+        //Get a query statement
         String query = daoUtils.getSQLStatement("COUNT_WORK");
         int count = 0;
         try {
@@ -142,6 +153,9 @@ public class WorkRepositoryImpl implements WorkRepository{
         }
     };
 
+    /*
+    * Convert ResultSet to work object
+    */
     public Work mapWorkResult(ResultSet rs) throws SQLException {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -151,6 +165,21 @@ public class WorkRepositoryImpl implements WorkRepository{
         work.setStartingDate(LocalDateTime.parse(rs.getString("starting_Date"), formatter));
         work.setEndingDate(LocalDateTime.parse(rs.getString("ending_Date"), formatter));
         work.setStatus(rs.getString("status"));
+        return work;
+    }
+
+
+    /*
+    * Convert to work object
+    *
+    */
+    public Work convertToWorkObject(WorkRequest workRequest) {
+        Work work = new Work();
+        work.setId(workRequest.getId());
+        work.setWorkName(workRequest.getWorkName());
+        work.setStartingDate(workRequest.getStartingDate());
+        work.setEndingDate(workRequest.getEndingDate());
+        work.setStatus(workRequest.getStatus());
         return work;
     }
 

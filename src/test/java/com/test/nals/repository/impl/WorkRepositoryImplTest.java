@@ -1,11 +1,16 @@
 package com.test.nals.repository.impl;
 
 import com.test.nals.config.TestNalsConfiguration;
+import com.test.nals.domain.WorkRequest;
 import com.test.nals.entity.Work;
 import com.test.nals.repository.WorkRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -28,10 +33,10 @@ public class WorkRepositoryImplTest {
     public void isExist() throws Exception {
         //GIVEN
         String workId = "work12";
-        Work work = getWork();
-        workRepository.save(work);
+        WorkRequest work = getWork();
+        workRepository.createNewWork(work);
         //WHEN
-        boolean isExist = workRepository.isExist(workId);
+        boolean isExist = workRepository.isExistWork(workId);
         //THEN
         assertTrue(isExist);
     }
@@ -40,41 +45,55 @@ public class WorkRepositoryImplTest {
     @Transactional
     public void save() throws Exception {
         //GIVEN
-        Work work = getWork();
-        boolean isExistBeforeSave = workRepository.isExist(work.getId());
+        WorkRequest work = getWork();
+        boolean isExist = workRepository.isExistWork(work.getId());
         //WHEN
-        workRepository.save(work);
-        boolean isExistAfterSave = workRepository.isExist(work.getId());
+        workRepository.createNewWork(work);
+        boolean isExistAfterCreate = workRepository.isExistWork(work.getId());
         //THEN
-        assertFalse(isExistBeforeSave);
-        assertTrue(isExistAfterSave);
+        assertFalse(isExist);
+        assertTrue(isExistAfterCreate);
     }
 
     @Test
     @Transactional
     public void update() throws Exception {
         //GIVEN
+        WorkRequest work = getWork();
+        workRepository.createNewWork(work);
+        work.setWorkName("TEST");
         //WHEN
+        int row = workRepository.updateWork(work);
         //THEN
+        assertEquals(1, row);
     }
 
     @Test
     public void delete() throws Exception {
         //GIVEN
+        WorkRequest work = getWork();
+        workRepository.createNewWork(work);
         //WHEN
+        int row = workRepository.deleteWork(work.getId());
         //THEN
+        boolean isExist = workRepository.isExistWork(work.getId());
+        assertEquals(1, row);
+        assertTrue(!isExist);
     }
 
     @Test
     public void getListWork() throws Exception {
         //GIVEN
+        Pageable pageable = PageRequest.of(1,5, Sort.by("id").ascending());
         //WHEN
+        Page<Work> works = workRepository.getWorks(pageable);
         //THEN
+        assertTrue(works.getTotalPages() > 0);
     }
 
-    private Work getWork() {
+    private WorkRequest getWork() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        Work work = new Work();
+        WorkRequest work = new WorkRequest();
         work.setId("work12");
         work.setWorkName("Lam Toan");
         work.setStartingDate(LocalDateTime.parse("2020-02-02 18:00:00", formatter));

@@ -1,4 +1,4 @@
-package com.test.nals.exception;
+package com.test.nals.util;
 
 public enum ErrorCode {
     TIME_INVALID("The Time is not valid"),

@@ -1,4 +1,4 @@
-package com.test.nals.repository;
+package com.test.nals.util;
 
 import org.springframework.stereotype.Component;
 
@@ -10,6 +10,10 @@ public class DaoUtils {
     private static final ResourceBundle SQL_RESOURCES = ResourceBundle
             .getBundle("sql_statement");
 
+    /*
+    * Method get a query statement by key
+    * @Return String, @Param String key
+    */
     public String getSQLStatement(String key) {
         String sql = null;
 

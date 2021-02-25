@@ -2,8 +2,8 @@ package com.test.nals.service;
 
 import com.test.nals.domain.WorkRequest;
 import com.test.nals.entity.Work;
-import com.test.nals.exception.BadRequestException;
-import com.test.nals.exception.ErrorCode;
+import com.test.nals.exception.DaoException;
+import com.test.nals.util.ErrorCode;
 import com.test.nals.repository.WorkRepository;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-@Service(value = "workServiceBean")
+@Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
 @Getter
@@ -32,28 +32,63 @@ public class WorkService {
     public WorkService() {
     }
 
-    public void createWork(WorkRequest workRequest) {
-        log.info("Create new work {} with status {}", workRequest.getWorkName(), workRequest.getStatus());
-        if (workRepository.isExist(workRequest.getIdWork())) {
-            throw new BadRequestException(ErrorCode.WORK_EXISTED);
+    /*
+    * Method to create a new Work
+    */
+    public int createNewWork(WorkRequest workRequest) {
+        log.info("Create a new work {} with status {}", workRequest.getWorkName(), workRequest.getStatus());
+
+        //Throw exception if a work is exist with id
+        if (workRepository.isExistWork(workRequest.getId())) {
+            throw new DaoException(ErrorCode.WORK_EXISTED.getMessage());
         }
-        workRepository.save(createOrUpdateWork(workRequest));
-        log.info("The work {} has just created", workRequest.getWorkName());
+        int result = workRepository.createNewWork(workRequest);
+        log.info("The work with name {} has just created", workRequest.getWorkName());
+        return result;
     }
 
-    public void editWork(String idWork, WorkRequest workRequest) {
-        log.info("Update work ()", idWork);
-        workRepository.update(createOrUpdateWork(workRequest));
-        log.info("Work {} is updated", idWork);
+    /*
+    * Method to change a exist work
+    */
+    public int updateWork(String idWork, WorkRequest workRequest) {
+        log.info("Update a Work with Id ()", idWork);
+
+        //if a work is not exist, throw a new exception
+        if (!workRepository.isExistWork(workRequest.getId())) {
+            throw new DaoException(ErrorCode.WORK_NOT_EXISTED.getMessage());
+        }
+        //Update a work
+        int result = workRepository.updateWork(workRequest);
+        log.info("The Work with Id {} is updated", idWork);
+        return result;
     }
 
-    public void removeWork(String idWork) {
-        log.info("Delete work {}", idWork);
-        workRepository.delete(idWork);
-        log.info("Work {} is deleted", idWork);
+    /*
+    * Method to remove a work with Id
+    */
+    public int removeWork(String idWork) {
+        log.info("Delete work with Id {}", idWork);
+
+        //if a work is not exist, throw a new exception
+        if (!workRepository.isExistWork(idWork)) {
+            throw new DaoException(ErrorCode.WORK_NOT_EXISTED.getMessage());
+        }
+
+        //Remove a work with Id
+        int result = workRepository.deleteWork(idWork);
+
+        log.info("Work with Id {} is deleted", idWork);
+        return result;
     }
 
+    /*
+    * Method to get list of work per page
+    * @Param int page, int size, String sortType, String sortField
+    * @Return works
+    */
     public Page<Work> getListWork(int page, int size, String sortType, String sortField) {
+
+        //sort object
         Sort sortable = null;
         if ("ASC".equals(sortType)) {
             sortable = Sort.by(sortField).ascending();
@@ -61,28 +96,21 @@ public class WorkService {
         if ("DESC".equals(sortType)) {
             sortable = Sort.by(sortField).descending();
         }
+        //pageable object
         Pageable pageable = PageRequest.of(page, size, sortable);
 
-        return workRepository.getListWork(pageable);
+        return workRepository.getWorks(pageable);
     }
 
+    /*
+    * Method to validate times
+    */
     private boolean isValidTime(LocalDateTime startingDate, LocalDateTime endingDate) {
-        if (startingDate.isAfter(endingDate)) {
+        //If starttingDate after endingDate: return false
+        if ((startingDate != null && endingDate != null) && startingDate.isAfter(endingDate)) {
             return false;
         }
         return true;
     }
 
-    private Work createOrUpdateWork(WorkRequest workRequest) {
-        Work work = new Work();
-        work.setId(workRequest.getIdWork());
-        work.setWorkName(workRequest.getWorkName());
-        if (!isValidTime(workRequest.getStartingDate(), workRequest.getEndingDate())) {
-            throw new BadRequestException(ErrorCode.TIME_INVALID);
-        }
-        work.setStartingDate(workRequest.getStartingDate());
-        work.setEndingDate(workRequest.getEndingDate());
-        work.setStatus(workRequest.getStatus());
-        return work;
-    }
 }
