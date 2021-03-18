@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -26,6 +27,7 @@ public class TestNalsConfiguration {
 
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource")
+    @Primary
     public DataSource dataSource() {
         return new EmbeddedDatabaseBuilder()
                 .setName("testnals;MODE=MYSQL")

@@ -41,7 +41,7 @@ public class WorkControllerTest {
     @Test
     public void createNewWork() throws Exception {
         //GIVEN
-        String url = "/work";
+        String url = "/works";
             //create a work request argument
         WorkRequest request = new WorkRequest();
         request.setId("work12");
@@ -62,7 +62,7 @@ public class WorkControllerTest {
     @Test
     public void updateWork() throws Exception {
         //GIVEN
-        String url = "/work/work12";
+        String url = "/works/work12";
         //create a work request argument
         WorkRequest request = new WorkRequest();
         request.setId("work12");
@@ -83,7 +83,7 @@ public class WorkControllerTest {
     @Test
     public void removeWork() throws Exception {
         //GIVEN
-        String url = "/work/work12";
+        String url = "/works/work12";
         //WHEN
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.delete(url)).andReturn();
         //THEN
@@ -95,7 +95,7 @@ public class WorkControllerTest {
     @Test
     public void getWorks() throws Exception {
         //GIVEN
-        String url = "/work";
+        String url = "/works";
         List<Work> works = new ArrayList<>();
         prepareWorkList(works);
         Page<Work> workPage = new PageImpl<Work>(works);

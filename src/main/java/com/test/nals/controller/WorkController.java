@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping(value = "/work")
+@RequestMapping(value = "/works")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
